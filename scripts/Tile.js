@@ -17,7 +17,7 @@ class Tile {
 		this.wy = (this.grid ? Global.tilesize : 1) * this.y;
 		this.center = {
 			x: this.wx + this.w / 2,
-			y: this.wy + this.y / 2
+			y: this.wy + this.h / 2
 		}
 		
 		this.children = [];
@@ -28,48 +28,44 @@ class Tile {
 	addChild(tile){
 		this.children.push(tile);
 	}
+	removeChild(tile){
+		for(var i = 0; i < this.children.length; i++){
+			if(this.children[i] === tile){
+				this.children.splice(i, 1);
+				break;
+			}
+		}
+	}
+	setSrc(src){
+		this.img.src = src;
+	}
 	addX(x){
 		this.x += x;
 		this.wx = (this.grid ? Global.tilesize : 1) * this.x;
 		this.center.x = this.wx + this.w / 2;
-		
-		this.children.forEach(function(c){
-			c.addX(x);
-		});
 	}
 	addY(y){
 		this.y += y;
 		this.wy = (this.grid ? Global.tilesize : 1) * this.y;
-		this.center.y = this.wy + this.y / 2;
-		
-		this.children.forEach(function(c){
-			c.addY(y);
-		});
+		this.center.y = this.wy + this.h / 2;
 	}
 	setX(x){
 		this.x = x;
 		this.wx = (this.grid ? Global.tilesize : 1) * this.x;
 		this.center.x = this.wx + this.w / 2;
-		
-		this.children.forEach(function(c){
-			c.setX(x);
-		});
 	}
 	setY(y){
 		this.y = y;
 		this.wy = (this.grid ? Global.tilesize : 1) * this.y;
-		this.center.y = this.wy + this.y / 2;
-		
-		this.children.forEach(function(c){
-			c.setY(y);
-		});
+		this.center.y = this.wy + this.h / 2;
 	}
 	draw(time, offx, offy){
 		ctx.globalAlpha = this.alpha;
 		ctx.drawImage(this.img, this.wx + offx, this.wy + offy, this.w, this.h);
 		
+		var self = this;
 		this.children.forEach(function(c){
-			c.draw(time, offx + c.wx, offy + c.wy);
+			c.draw(time, offx + self.wx, offy + self.wy);
 		});
 	}
 }

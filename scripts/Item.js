@@ -1,24 +1,28 @@
-class Item {
-	constructor(src, x, y, extra, stats, attack){
+class Item{
+	constructor(src, x, y, extra, cooldown, attack){
 		extra.add = false;
 		this.tile = new Tile(src, x, y, extra);
-		this.stats = stats;
-		this.attack = attack;
+		this.attack = attack ? attack : function(){};
+		this.canAttack = true;
+		this.cooldown = cooldown;
+	}
+	async use(){
+		if(this.canAttack){
+			this.canAttack = false;
+			await this.attack();
+			await Tools.sleep(this.cooldown);
+			this.canAttack = true;
+		}
 	}
 }
 class Inventory {
 	constructor(size, items){
 		this.size = size;
 		this.items = items ? items : [];
-		this.equipped = this.items.length ? this.items[0] : undefined;
 		if(this.items.length > this.size)
-			this.items.splice(this.size, this.items.length - this.size);
+			this.items = items.splice(0, this.size);
 	}
-	add(item){
-		if(this.items.length < size)
-			this.items.push(item);
-	}
-	equip(index){
-		this.equipped = this.items[index];
+	get(index){
+		return this.items[index];
 	}
 }

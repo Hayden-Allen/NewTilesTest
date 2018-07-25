@@ -38,17 +38,17 @@ var Tools = {
 			var angle = Tools.angle(tile.center.x, tile.center.y, r.center.x, r.center.y).deg;
 			
 			if((angle > 45 && angle <= 135) &&
-				tile.wx + tile.w > r.x && tile.wx < r.x + r.w && tile.wy + tile.h > r.y)
-				tile.setY(r.y - tile.h);
+				tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy + tile.h > r.wy)
+				tile.setY(r.wy - tile.h);
 			if((angle > 135 && angle <= 225) &&
-				tile.wy + tile.h > r.y && tile.wy < r.y + r.h && tile.wx + tile.w > r.x)
-				tile.setX(r.x - tile.w);
+				tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx + tile.w > r.wx)
+				tile.setX(r.wx - tile.w);
 			if((angle > 225 && angle <= 315) &&
-				tile.wx + tile.w > r.x && tile.wx < r.x + r.w && tile.wy < r.y + r.h)
-				tile.setY(r.y + r.h);
+				tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy < r.wy + r.h)
+				tile.setY(r.wy + r.h);
 			if((angle > 315 || angle <= 45) &&
-				tile.wy + tile.h > r.y && tile.wy < r.y + r.h && tile.wx < r.x + r.w)
-				tile.setX(r.x + r.w);
+				tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx < r.wx + r.w)
+				tile.setX(r.wx + r.w);
 		});
 	}
 }

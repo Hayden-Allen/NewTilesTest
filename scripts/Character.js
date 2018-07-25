@@ -1,12 +1,33 @@
 class Character{
 	constructor(tile, inventory, speed){
 		this.tile = tile;
-		this.inventory = inventory;
 		this.speed = speed / 1000;
+		this.direction = 0;
+		
+		this.inventory = inventory ? inventory : new Inventory(5);
+		this.equipped;
+		this.equip(0);
+		
 		Global.currentScene.add(this);
 	}
 	update(){
 		Tools.testRigids(this.tile);
+	}
+	draw(time, offx, offy){
+		ctx.save();
+		ctx.translate(this.tile.center.x + offx, this.tile.center.y + offy);
+		ctx.rotate(Math.PI / 2 * this.direction);
+		this.tile.draw(time, -this.tile.center.x, -this.tile.center.y);
+		ctx.restore();
+	}
+	equip(index){
+		if(index < this.inventory.items.length){
+			console.log("A");
+			if(this.equipped)
+				this.tile.removeChild(this.equipped.tile);
+			this.equipped = this.inventory.get(index);
+			this.tile.addChild(this.equipped.tile);
+		}
 	}
 }
 class Player extends Character{
@@ -29,10 +50,8 @@ class Player extends Character{
 			
 			if(keys.at(4).valueOf()){
 				keys.flip(4);
-				self.inventory.equipped.attack();
+				self.equipped.use();
 			}
 		});
-		
-		this.tile.addChild(this.inventory.equipped.tile);
 	}
 }

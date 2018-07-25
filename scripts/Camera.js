@@ -7,7 +7,7 @@ class Camera {
 			u.update();
 		});
 		
-		var cx = this.target.wx + this.target.w / 2, cy = this.target.wy + this.target.h / 2;
+		var cx = this.target.tile.center.x, cy = this.target.tile.center.y;
 		var offx = c.width / 2 - cx, offy = c.height / 2 - cy;
 	
 		if(scene.bounds.right - scene.bounds.right > c.width && scene.bounds.bottom - scene.bounds.top > c.height){
@@ -24,10 +24,11 @@ class Camera {
 		offx = Math.round(offx);
 		offy = Math.round(offy);
 						
-		var time = performance.now();
-			
+		var time = performance.now(), self = this;
+		
 		scene.layers[0].forEach(function(t){
-			t.draw(time, offx, offy);
+			if(t !== self.target)
+				t.draw(time, offx, offy);
 		});
 		
 		this.target.draw(time, offx, offy);
