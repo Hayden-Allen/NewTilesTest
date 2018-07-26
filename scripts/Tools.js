@@ -34,21 +34,36 @@ var Tools = {
 		return Math.max(Math.min(val, max), min);
 	},
 	testRigids: function(tile){
+		var collision = false;
 		Global.currentScene.rigids.forEach(function(r){
-			var angle = Tools.angle(tile.center.x, tile.center.y, r.center.x, r.center.y).deg;
-			
-			if((angle > 45 && angle <= 135) &&
-				tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy + tile.h > r.wy)
-				tile.setY(r.wy - tile.h);
-			if((angle > 135 && angle <= 225) &&
-				tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx + tile.w > r.wx)
-				tile.setX(r.wx - tile.w);
-			if((angle > 225 && angle <= 315) &&
-				tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy < r.wy + r.h)
-				tile.setY(r.wy + r.h);
-			if((angle > 315 || angle <= 45) &&
-				tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx < r.wx + r.w)
-				tile.setX(r.wx + r.w);
+			if(tile.flags.at(2) || r.flags.at(Global.Flags.rigidGroup) == tile.flags.at(Global.Flags.rigidGroup)){
+				var angle = Tools.angle(tile.center.x, tile.center.y, r.center.x, r.center.y).deg;
+				
+				if((angle > 45 && angle <= 135) &&
+					tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy + tile.h > r.wy){
+					tile.setY(r.wy - tile.h);
+					collision = true;
+					}
+				else if((angle > 135 && angle <= 225) &&
+					tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx + tile.w > r.wx){
+					tile.setX(r.wx - tile.w);
+					collision = true;
+					}
+				else if((angle > 225 && angle <= 315) &&
+					tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy < r.wy + r.h){
+					tile.setY(r.wy + r.h);
+					collision = true;
+					}
+				else if((angle > 315 || angle <= 45) &&
+					tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx < r.wx + r.w){
+					tile.setX(r.wx + r.w);
+					collision = true;
+					}
+					
+				if(collision)
+					return;
+			}
 		});
+		return collision;
 	}
 }

@@ -7,29 +7,53 @@ class Scene {
 		this.lightMap = [];
 		this.lights = [];
 		this.rigids = [];
-		this.updateables = [];
+		this.updatables = [];
+		this.ui = [];
+	}
+	remove(obj){
+		for(var i = 0; i < this.layers.length; i++)
+			for(var j = 0; j < this.layers[i].length; j++)
+				if(this.layers[i][j] === obj){
+					this.layers[i].splice(j, 1);
+					return;
+				}
+	}
+	removeUpdatable(u){
+		for(var i = 0; i < this.updatables.length; i++)
+			if(this.updatables[i] === u){
+				this.updatables.splice(i, 1);
+				return;
+			}
 	}
 	add(obj){
-					
-		if(obj.wx !== undefined && obj.wy !== undefined){	//is tile
-			this.bounds.left = this.bounds.left !== undefined ? Math.min(this.bounds.left, obj.wx) : obj.wx;
-			this.bounds.right = this.bounds.right !== undefined ? Math.max(this.bounds.right, obj.wx + obj.w) : obj.wx + obj.w;
-			this.bounds.top = this.bounds.top !== undefined ? Math.min(this.bounds.top, obj.wy) : obj.wy;
-			this.bounds.bottom = this.bounds.bottom !== undefined ? Math.max(this.bounds.bottom, obj.wy + obj.h) : obj.wy + obj.h;
-			
-			if(obj.extra.light)
-				this.lights.push({
-					x: (obj.wx - this.bounds.left) / Global.tilesize, 
-					y: (obj.wy - this.bounds.top) / Global.tilesize, 
-					i: obj.extra.light
-				});
-			if(obj.extra.rigid)
-				this.rigids.push(obj);
-		}
-		
 		if(obj.update)
-			this.updateables.push(obj);
-		this.layers[0].push(obj);
+			this.updatables.push(obj);
+		else{
+			var z = obj.zindex !== undefined ? obj.zindex : 0;
+			if(z == -1)
+				this.ui.push(obj);
+			else{
+				while(this.layers.length - 1 < z)
+					this.layers.push([]);
+				this.layers[z].push(obj);
+				
+				if(obj.wx !== undefined && obj.wy !== undefined){	//is tile
+					this.bounds.left = this.bounds.left !== undefined ? Math.min(this.bounds.left, obj.wx) : obj.wx;
+					this.bounds.right = this.bounds.right !== undefined ? Math.max(this.bounds.right, obj.wx + obj.w) : obj.wx + obj.w;
+					this.bounds.top = this.bounds.top !== undefined ? Math.min(this.bounds.top, obj.wy) : obj.wy;
+					this.bounds.bottom = this.bounds.bottom !== undefined ? Math.max(this.bounds.bottom, obj.wy + obj.h) : obj.wy + obj.h;
+					
+					if(obj.extra.light)
+						this.lights.push({
+							x: (obj.wx - this.bounds.left) / Global.tilesize, 
+							y: (obj.wy - this.bounds.top) / Global.tilesize, 
+							i: obj.extra.light
+						});
+					if(obj.extra.rigid)
+						this.rigids.push(obj);
+				}
+			}
+		}
 	}
 	finalize(){
 		for(var i = 0; i < (this.bounds.bottom - this.bounds.top) / Global.tilesize; i++)

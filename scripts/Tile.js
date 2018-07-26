@@ -12,7 +12,17 @@ class Tile {
 		this.grid = this.extra.grid !== undefined ? this.extra.grid : true;
 		this.alpha = this.extra.alpha !== undefined ? this.extra.alpha : 1;
 		this.rigid = this.extra.rigid !== undefined ? this.extra.rigid : false;
-		
+		this.zindex = this.extra.zindex !== undefined ? this.extra.zindex : 0;
+		this.flags = this.extra.flags !== undefined ? this.extra.flags : new BitSet(0b010);
+		/*+-+-+-+-+-+----------+-------+-----------+
+		 *|7|6|5|4|3|	2	   |	1  |	 0	   |	index
+		 *+-+-+-+-+-+----------+-------+-----------+
+		 *| | | | | |Projectile|Visible|Rigid group|	flag
+		 *+-+-+-+-+-+----------+-------+-----------+
+		 *| | | | | | 	0	   |	1  |     0     |	default
+		 *+-+-+-+-+-+----------+-------+-----------+
+		 */
+	
 		this.wx = (this.grid ? Global.tilesize : 1) * this.x;
 		this.wy = (this.grid ? Global.tilesize : 1) * this.y;
 		this.center = {
@@ -62,38 +72,13 @@ class Tile {
 	draw(time, offx, offy){
 		ctx.globalAlpha = this.alpha;
 		ctx.drawImage(this.img, this.wx + offx, this.wy + offy, this.w, this.h);
+		if(this.rigid)
+			Tools.testRigids(this);
 		
 		var self = this;
 		this.children.forEach(function(c){
 			c.draw(time, offx + self.wx, offy + self.wy);
 		});
-	}
-}
-class AnimatedTile extends Tile {
-	constructor(frames, time, src, x, y, extra){
-		super(src, x, y, extra);
-		this.frames = frames;
-		this.frame = 0;
-		this.frameTime = time / frames;
-		this.last = performance.now();
-		this.cropw = extra && extra.cropw ? extra.cropw : undefined;
-		this.croph = extra && extra.croph ? extra.croph : undefined;
-		
-		var self = this;
-		this.img.onload = function(){
-			if(self.cropw === undefined)
-				self.cropw = self.img.width / self.frames;
-			if(self.croph === undefined)
-				self.croph = self.img.height;
-		}
-	}
-	draw(time, offx, offy){
-		if(time - this.last >= this.frameTime){
-			this.frame = (this.frame + 1) % this.frames;
-			this.last = performance.now();
-		}
-		ctx.globalAlpha = this.alpha;
-		ctx.drawImage(this.img, this.frame * this.cropw, 0, this.cropw, this.croph, this.wx + offx, this.wy + offy, this.w, this.h);
 	}
 }
 function TileStretch(src, x, y, w, h, extra){
