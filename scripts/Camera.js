@@ -6,9 +6,9 @@ class Camera {
 		this.sprites = 0;
 	}
 	draw(t, time, offx, offy){
-		if((t.wx + t.w > this.target.tile.center.x - c.width / 2 && t.wy < this.target.tile.center.x + c.width / 2 &&
-			t.wy + t.h > this.target.tile.center.y - c.height / 2 && t.wy < this.target.tile.center.y + c.height / 2 &&
-			t !== self.target || t.zindex == -1) && t.flags.at(Global.Flags.visible)){
+		if(t.flags.at(Global.Flags.visible) && ((t.wx + t.w > this.target.tile.center.x - c.width / 2 && t.wy < this.target.tile.center.x + c.width / 2) &&
+			(t.wy + t.h > this.target.tile.center.y - c.height / 2 && t.wy < this.target.tile.center.y + c.height / 2) ||
+			(t !== self.target || t.zindex == -1))){
 			t.draw(time, offx, offy);
 			this.sprites++;
 		}
@@ -54,14 +54,19 @@ class Camera {
 		var lm = scene.lightMap;
 		for(var i = 0; i < lm.length; i++)
 			for(var j = 0; j < lm[i].length; j++)
-				Tools.rect(scene.bounds.left + i * Global.tilesize + offx, scene.bounds.top + j * Global.tilesize + offy, Global.tilesize, Global.tilesize, 
+				Tools.rect(
+					scene.bounds.left + i * Global.tilesize + offx, 
+					scene.bounds.top + j * Global.tilesize + offy, 
+					Global.tilesize, 
+					Global.tilesize, 
 					"#000000", 1 - ((1 / Global.lightMax) * scene.lightMap[i][j]));
 					
+		console.log(scene.ui[0].wx);
 		scene.ui.forEach(function(t){
 			self.draw(t, time, 0, 0);
 		});
 		
-		this.maxSprites = Math.max(this.maxSprites, this.sprites);
 		this.minSprites = Math.min(this.minSprites, this.sprites);
+		this.maxSprites = Math.max(this.maxSprites, this.sprites);
 	}
 }

@@ -13,14 +13,14 @@ class Tile {
 		this.alpha = this.extra.alpha !== undefined ? this.extra.alpha : 1;
 		this.rigid = this.extra.rigid !== undefined ? this.extra.rigid : false;
 		this.zindex = this.extra.zindex !== undefined ? this.extra.zindex : 0;
-		this.flags = this.extra.flags !== undefined ? this.extra.flags : new BitSet(0b010);
-		/*+-+-+-+-+-+----------+-------+-----------+
-		 *|7|6|5|4|3|	2	   |	1  |	 0	   |	index
-		 *+-+-+-+-+-+----------+-------+-----------+
-		 *| | | | | |Projectile|Visible|Rigid group|	flag
-		 *+-+-+-+-+-+----------+-------+-----------+
-		 *| | | | | | 	0	   |	1  |     0     |	default
-		 *+-+-+-+-+-+----------+-------+-----------+
+		this.flags = this.extra.flags !== undefined ? this.extra.flags : new BitSet(0b0000010);
+		/*+-+-----------+------------+-----------+-------+----------+-------+-----------+
+		 *|7|		6   |      5     |	4  	   	 |	3  	 |	2 	  	|	1  	|	0  		|	index
+		 *+-+-----------+------------+-----------+-------+----------+-------+-----------+
+		 *| |Destructive|Destructible|From Player|Movable|Projectile|Visible|Rigid group|	flag
+		 *+-+-----------+------------+-----------+-------+----------+-------+-----------+
+		 *| | 		0   | 	0	     | 	0  	     | 0	 | 	0	    |	1  	|     0     |	default
+		 *+-+-----------+------------+-----------+-------+----------+-------+-----------+
 		 */
 	
 		this.wx = (this.grid ? Global.tilesize : 1) * this.x;
@@ -64,9 +64,19 @@ class Tile {
 		this.wx = (this.grid ? Global.tilesize : 1) * this.x;
 		this.center.x = this.wx + this.w / 2;
 	}
+	setWX(wx){
+		this.wx = wx;
+		this.x = this.wx / (this.grid ? Global.tilesize : 1);
+		this.center.x = this.wx + this.h / 2;
+	}
 	setY(y){
 		this.y = y;
 		this.wy = (this.grid ? Global.tilesize : 1) * this.y;
+		this.center.y = this.wy + this.h / 2;
+	}
+	setWY(wy){
+		this.wy = wy;
+		this.y = this.wy / (this.grid ? Global.tilesize : 1);
 		this.center.y = this.wy + this.h / 2;
 	}
 	draw(time, offx, offy){

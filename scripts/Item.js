@@ -15,7 +15,7 @@ class Item{
 			
 			await this.attack();
 			await Tools.sleep(this.cooldown);
-			this.postCooldown();
+			await this.postCooldown();
 			
 			this.canAttack = true;
 		}

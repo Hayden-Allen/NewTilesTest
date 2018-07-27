@@ -15,9 +15,39 @@ var Global = {
 	delta: 0,
 	Flags: {
 		rigidGroup: 0,
-		visible: 1
+		visible: 1,
+		projectile: 2,
+		movable: 3,
+		fromPlayer: 4,
+		destructible: 5,
+		destructive: 6,
+		
+		rg: 1,
+		vis: 2,
+		proj: 4,
+		mov: 8,
+		fp: 16,
+		dsb: 32,
+		dsv: 64
+	},
+	Keys: {
+		$1: 0xD,
+		$2: 0xC,
+		$3: 0xB,
+		$4: 0xA,
+		q:  9,
+		e:  8,
+		r:  7,
+		f:  6,
+		c:  5,
+		_:  4,
+		w:  3,
+		a:  2,
+		s:  1,
+		d:  0
 	}
 }
+var gf = Global.Flags;
 
 var c = document.getElementById("c");
 c.width = window.innerWidth - Global.tilesize;
@@ -34,92 +64,195 @@ function clearScreen(){
 	last = performance.now();
 }
 
+
 var scene1 = new Scene(10);
 Global.currentScene = scene1;
-
-var sword = new Item("assets/item/sword.png", Global.tilesize / 2, -Global.tilesize / 2, {grid: false, w: .5, cooldown: 100},
-					async function(){
-						player.controls.lock();
-						
-						this.tile.addY(-Global.tilesize / 2);
-						await Tools.sleep(100);
-						this.tile.addY(Global.tilesize / 2);
-						
-						player.controls.unlock();
-					});
-var shield = new Item("assets/item/shield_inactive.png", Global.tilesize / 4, Global.tilesize / 4, {grid: false, w: .5, h: .5, cooldown: 1000},
-					async function(){
-						player.controls.lock();
-						this.tile.setSrc("assets/item/shield_active.png");
-						
-						var radius = Global.tilesize * 2.25;
-						var step = Math.PI / 15;
-						var cur = 0;
-						var tiles = [];
-						
-						while(cur < Math.PI){
-							var tile = new Tile("assets/item/shield_active.png", 
-												Global.tilesize / 4 + radius * Math.cos(cur),
-												Global.tilesize / 4 + radius * -Math.sin(cur), 
-												{add: false, grid: false, rigid: true, w: .5, h: .5, flags: new BitSet(0b111)});
-												
-							player.tile.addChild(tile);
-							tiles.push(tile);
-						
-							cur += step;
-							await Tools.sleep(5);
-						}
-						
-						player.controls.unlock();
-						
-						await Tools.sleep(3000);
-						tiles.forEach(function(t){
-							player.tile.removeChild(t);
-						});
-						this.tile.setSrc("assets/item/shield_disabled.png");
-					}, 
-					function(){
-						this.tile.setSrc("assets/item/shield_inactive.png");
-					});
-var bow = new Item("assets/item/bow.png", 0, 0, {cooldown: 500},
-						async function(){
-							var p = new Projectile("assets/item/arrow.png", 
-											player.tile.wx,
-											player.tile.wy,
-											{
-												grid: false
-											},
-											10,
-											{
-												x: Math.cos((player.direction - 1) * Math.PI / 2),
-												y: Math.sin((player.direction - 1) * Math.PI / 2)
-											});
-											
-							p.onDestroy = function(){
-								console.log("boing");
-							}
-						});
-
-var player = new Player(new Tile("assets/tile/player.png", 5 * Global.tilesize, 14 * Global.tilesize, {add: false, grid: false}), 
-						new Inventory([shield, bow, sword, sword, sword, sword, sword, sword, sword]),
-						15);
-
 TileStretch("assets/tile/grass.png", 0, 0, 15, 15);
-//new Tile("assets/tile/stone.png", 5, 5, {rigid: true});
-var p = new Projectile("assets/item/arrow.png", 5 * Global.tilesize, 5 * Global.tilesize, {grid: false}, 10, {x: 0, y: 1});
-
-
-var camera = new Camera(player);
+var stone = new Tile("assets/tile/stone.png", 5, 5, {rigid: true, flags: new BitSet(gf.dsb | gf.vis), light: 5});
 scene1.finalize();
 
+var sword = new Item(
+				"assets/item/sword.png", 
+				Global.tilesize / 2, 
+				-Global.tilesize / 2, 
+				{
+					grid: false, 
+					w: .5, 
+					cooldown: 100
+				},
+				async function(){
+					player.controls.lock();
+					
+					this.tile.addY(-Global.tilesize / 2);
+					await Tools.sleep(100);
+					this.tile.addY(Global.tilesize / 2);
+					
+					player.controls.unlock();
+				}
+			);
+var shield = new Item(
+				"assets/item/shield_inactive.png", 
+				Global.tilesize / 4, 
+				Global.tilesize / 4, 
+				{
+					grid: false, 
+					w: .5, 
+					h: .5, 
+					cooldown: 1000
+				},
+				async function(){
+					player.controls.lock();
+					this.tile.setSrc("assets/item/shield_active.png");
+					
+					var radius = Global.tilesize * 2.25;
+					var step = Math.PI / 15;
+					var tiles = [];
+					var direction = (player.direction * Math.PI / 2), end = parseFloat((direction + Math.PI).toFixed(4));
+					
+					while(direction <= end){
+						var tile = new Tile(
+										"assets/item/shield_active.png", 
+										(player.tile.wx + Global.tilesize / 4) + radius * -Math.cos(direction),
+										(player.tile.wy + Global.tilesize / 4) + radius * -Math.sin(direction), 
+										{
+											add: true,
+											grid: false,
+											rigid: true, 
+											w: .5, 
+											h: .5, 
+											flags: new BitSet(gf.vis | gf.rg)
+										}
+									);
+											
+						direction += step;
+						direction = parseFloat(direction.toFixed(4));
+						
+						tiles.push(tile);
+						await Tools.sleep(2);
+					}
+					
+					player.controls.unlock();
+					await Tools.sleep(3000);
+					
+					tiles.forEach(function(t){
+						Global.currentScene.remove(t);
+					});
+					
+					this.tile.setSrc("assets/item/shield_disabled.png");
+				}, 
+				function(){
+					this.tile.setSrc("assets/item/shield_inactive.png");
+				}
+			);
+var bow = new Item(
+				"assets/item/bow.png", 
+				0, 
+				0, 
+				{
+					cooldown: 500
+				},
+				async function(){
+					new Projectile(
+						"assets/item/arrow.png", 
+						player.tile.wx,
+						player.tile.wy,
+						{
+							grid: false,
+							flags: new BitSet(gf.proj | gf.vis | gf.rg)
+						},
+						10,
+						{
+							x: Math.cos((player.direction - 1) * Math.PI / 2),
+							y: Math.sin((player.direction - 1) * Math.PI / 2)
+						}
+					);
+				}
+			);
+var ballandchain = new Item(
+						"assets/item/chain.png",
+						0,
+						0,
+						{
+							cooldown: 500
+						},
+						async function(){
+							player.controls.lock();
+							
+							var direction = (player.direction - 1) * Math.PI / 2;
+							var radius = Global.tilesize * 2;
+							
+							var ball = new Tile(
+											"assets/item/ball.png",
+											player.tile.wx + radius * Math.cos(direction),
+											player.tile.wy + radius * Math.sin(direction),
+											{
+												grid: false,
+												rigid: true,
+												flags: new BitSet(gf.dsv | gf.fp | gf.vis)
+											}
+										);
+							
+							var chain = [], chains = 3, chainstep = radius / chains;
+							for(var i = 0; i < chains; i++)
+								chain.push(new Tile(
+												"assets/item/chain.png",
+												player.tile.wx + chainstep * i * Math.cos(direction),
+												player.tile.wy + chainstep * i * Math.sin(direction),
+												{
+													grid: false,
+													rigid: false,
+													flags: new BitSet(gf.fp | gf.vis),
+													zindex: 1
+												}
+											));
+							
+							var cur = 0, step = Math.PI / 15;
+							while(cur < Math.PI * 2){
+								cur += step;
+								
+								ball.setX(player.tile.wx + radius * Math.cos(direction + cur));
+								ball.setY(player.tile.wy + radius * Math.sin(direction + cur));
+								
+								for(var i = 0; i < chain.length; i++){
+									chain[i].setX(player.tile.wx + chainstep * i * Math.cos(direction + cur));
+									chain[i].setY(player.tile.wy + chainstep * i * Math.sin(direction + cur));
+								}
+								
+								await Tools.sleep(25);
+							}
+							
+							Global.currentScene.remove(ball);
+							chain.forEach(function(c){
+								Global.currentScene.remove(c);
+							});
+							
+							player.controls.unlock();
+						}
+					);
+
+var player = new Player(
+				new Tile(
+					"assets/tile/player.png", 
+					5 * Global.tilesize, 
+					14 * Global.tilesize, 
+					{
+						add: false, 
+						grid: false, 
+						flags: 
+						new BitSet(gf.mov | gf.vis | gf.rg)
+					}
+				),
+				new Inventory([ballandchain, shield, bow, sword, sword, sword, sword, sword, sword]),
+				15
+			);
+			
+
+var camera = new Camera(player);
 var last = performance.now(), debug = new DebugInfo();
 function update(){
 	clearScreen();
 	
 	camera.render(Global.currentScene);	
-	
-	
-console.log(p.tile.wx + ", " + p.tile.wy);
 	
 	debug.update(player.tile.wx, player.tile.wy, camera.sprites, camera.minSprites, camera.maxSprites, 1000 / Global.delta);
 	Tools.debug("debug", debug.string());	

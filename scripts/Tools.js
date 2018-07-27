@@ -36,32 +36,39 @@ var Tools = {
 	testRigids: function(tile){
 		var collision = false;
 		Global.currentScene.rigids.forEach(function(r){
-			if(tile.flags.at(2) || r.flags.at(Global.Flags.rigidGroup) == tile.flags.at(Global.Flags.rigidGroup)){
+			if(!(tile.flags.at(Global.Flags.rigidGroup) && r.flags.at(Global.Flags.rigidGroup))){
 				var angle = Tools.angle(tile.center.x, tile.center.y, r.center.x, r.center.y).deg;
 				
 				if((angle > 45 && angle <= 135) &&
-					tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy + tile.h > r.wy){
-					tile.setY(r.wy - tile.h);
+				   (tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy + tile.h > r.wy)){
+					if(tile.flags.at(Global.Flags.movable))
+						tile.setWY(r.wy - tile.h);
 					collision = true;
-					}
+				}
 				else if((angle > 135 && angle <= 225) &&
-					tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx + tile.w > r.wx){
-					tile.setX(r.wx - tile.w);
+						(tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx + tile.w > r.wx)){
+					if(tile.flags.at(Global.Flags.movable))
+						tile.setWX(r.wx - tile.w);
 					collision = true;
-					}
+				}
 				else if((angle > 225 && angle <= 315) &&
-					tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy < r.wy + r.h){
-					tile.setY(r.wy + r.h);
+						(tile.wx + tile.w > r.wx && tile.wx < r.wx + r.w && tile.wy < r.wy + r.h)){
+					if(tile.flags.at(Global.Flags.movable))
+						tile.setWY(r.wy + r.h);
 					collision = true;
-					}
+				}
 				else if((angle > 315 || angle <= 45) &&
-					tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx < r.wx + r.w){
-					tile.setX(r.wx + r.w);
+						(tile.wy + tile.h > r.wy && tile.wy < r.wy + r.h && tile.wx < r.wx + r.w)){
+					if(tile.flags.at(Global.Flags.movable))
+						tile.setWX(r.wx + r.w);
 					collision = true;
-					}
+				}
 					
-				if(collision)
+				if(collision){
+					if(r.flags.at(Global.Flags.destructive) && tile.flags.at(Global.Flags.destructible))
+						Global.currentScene.remove(tile);
 					return;
+				}
 			}
 		});
 		return collision;

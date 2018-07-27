@@ -1,6 +1,10 @@
 class Projectile {
 	constructor(src, x, y, extra, speed, direction){
-		extra.flags = new BitSet(0b110);
+		if(extra.flags)
+			extra.flags.set(Global.Flags.projectile, true);
+		else
+			extra.flags = new BitSet(0b110);
+		
 		this.tile = new Tile(src, x, y, extra);
 		this.speed = speed;
 		this.direction = direction;
@@ -21,12 +25,11 @@ class Projectile {
 		this.tile.addX(this.speed * this.direction.x);
 		this.tile.addY(this.speed * this.direction.y);
 		
-		//this.tile.draw(time, offx, offy);
-		
 		var collision = Tools.testRigids(this.tile);
 		
-		if(collision || this.tile.wy < Global.currentScene.bounds.top || this.tile.wy + this.tile.h > Global.currentScene.bounds.bottom ||
-			this.tile.wx < Global.currentScene.bounds.left || this.tile.wx + this.tile.w > Global.currentScene.bounds.right){
+		if(collision || 
+		   (this.tile.wy < Global.currentScene.bounds.top || this.tile.wy + this.tile.h > Global.currentScene.bounds.bottom) ||
+		   (this.tile.wx < Global.currentScene.bounds.left || this.tile.wx + this.tile.w > Global.currentScene.bounds.right)){
 				Global.currentScene.remove(this.tile);
 				Global.currentScene.removeUpdatable(this);
 				if(this.onDestroy)

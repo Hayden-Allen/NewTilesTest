@@ -10,16 +10,16 @@ class Player extends Character{
 			
 			speed *= Global.delta;
 			
-			this.target.addX(Math.round((keys.at(0) * speed) - (keys.at(2) * speed)));
-			this.target.addY(Math.round((keys.at(1) * speed) - (keys.at(3) * speed)));
+			this.target.addX(Math.round((keys.at(Global.Keys.d) * speed) - (keys.at(Global.Keys.a) * speed)));
+			this.target.addY(Math.round((keys.at(Global.Keys.s) * speed) - (keys.at(Global.Keys.w) * speed)));
 				
 			this.target.setX(Tools.clamp(this.target.wx, Global.currentScene.bounds.left, Global.currentScene.bounds.right - this.target.w));
 			this.target.setY(Tools.clamp(this.target.wy, Global.currentScene.bounds.top, Global.currentScene.bounds.bottom - this.target.h));
 			
-			if(keys.at(4))
+			if(keys.at(Global.Keys._))
 				self.equipped.use();
-			if(keys.value > 16)
-				self.equip(9 - (parseInt(Math.log2(keys.value)) - 4));
+			if(keys.value > Math.pow(2, Global.Keys._))
+				self.equip((Global.Keys.$1 - Global.Keys.c + 1) - (parseInt(Math.log2(keys.value)) - Global.Keys._));
 		});
 	}
 }
