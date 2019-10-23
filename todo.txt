@@ -1,2 +1,0 @@
-can push movable tile out of world bounds
-inventory size
